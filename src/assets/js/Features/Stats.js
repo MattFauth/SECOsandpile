@@ -70,6 +70,7 @@ function makeStatsFile(Tiling) {
 var listaQtdAvalanches = [];
 var listaQtdGraosPerdidos = [];
 var listaNumberOfSteps = [0];
+var listaQtdGraosTotais = [];
 
 const myChartAvalanches = new Chart(document.getElementById('myChartAvalanches'), {
 	type: "line",
@@ -78,8 +79,8 @@ const myChartAvalanches = new Chart(document.getElementById('myChartAvalanches')
 		datasets: [{
 			fill: false,
 			lineTension: 0,
-			backgroundColor: "rgba(0,0,255,1.0)",
-			borderColor: "rgba(0,0,255,0.1)",
+			backgroundColor: "#192f56",
+			borderColor: "#345da9",
 			data: listaQtdAvalanches
 		}]
 	},
@@ -101,8 +102,8 @@ const myChartGraosPerdidos = new Chart(document.getElementById('myChartGraosPerd
 		datasets: [{
 			fill: false,
 			lineTension: 0,
-			backgroundColor: "red",
-			borderColor: "rgba(0,0,255,0.1)",
+			backgroundColor: "#CD1818",
+			borderColor: "#ff4c57",
 			data: listaQtdGraosPerdidos
 		}]
 	},
@@ -113,6 +114,29 @@ const myChartGraosPerdidos = new Chart(document.getElementById('myChartGraosPerd
 		title: {
 			display: true,
 			text: "Quantidade de grãos perdidos por passos"
+		  }
+	}
+});
+
+const myChartGraosTotais = new Chart(document.getElementById('myChartGraosTotais'), {
+	type: "line",
+	data: {
+		labels: listaNumberOfSteps,
+		datasets: [{
+			fill: false,
+			lineTension: 0,
+			backgroundColor: "#CD1818",
+			borderColor: "#ff4c57",
+			data: listaQtdGraosTotais
+		}]
+	},
+	options: {
+		legend: {
+			display: false
+		},
+		title: {
+			display: true,
+			text: "Quantidade de grãos totais no sistema"
 		  }
 	}
 });
@@ -129,20 +153,23 @@ function show_stats() {
 
 		qtdAvalanches = currentTiling.qtdAvalanches;
 		qtdGraosPerdidos = currentTiling.qtdGraosPerdidos;
+		qtdGraosTotais = currentTiling.qtdGraosTotais;
 
 		//Chart
 		listaQtdAvalanches.push(currentTiling.qtdAvalanches);
 		listaQtdGraosPerdidos.push(currentTiling.qtdGraosPerdidos);
+		listaQtdGraosTotais.push(get_totalSand());
 		listaNumberOfSteps.push(number_of_steps);
 
-		if (listaNumberOfSteps.length > 5) {
-			listaQtdAvalanches.shift();
-			listaQtdGraosPerdidos.shift();
-			listaNumberOfSteps.shift();
-		};
+		// if (listaNumberOfSteps.length > 5) {
+		// 	listaQtdAvalanches.shift();
+		// 	listaQtdGraosPerdidos.shift();
+		// 	listaNumberOfSteps.shift();
+		// };
 
 		myChartAvalanches.update();
 		myChartGraosPerdidos.update();
+		myChartGraosTotais.update();
 
 		var mean = 0;
 		var std = 0;
@@ -150,8 +177,7 @@ function show_stats() {
 			mean += population[i] * i
 		}
 
-
-		var text_stats = "Number of tiles : " + currentTiling.tiles.length + "<br>qtdAvalanches : " + qtdAvalanches + "<br>qtdGraosPerdidos : " + qtdGraosPerdidos;
+		var text_stats = "Número de sítios: " + currentTiling.tiles.length;
 		// var text_stats = "Number of tiles : " + currentTiling.tiles.length + "<br>qtdAvalanches : " + qtdAvalanches + "<br>qtdGraosPerdidos : " + qtdGraosPerdidos + "<br>Mean : " + mean + "<br> Standard deviation : " + std + "<br> Population : <br>";
 		var jump_line = false;
 		Object.keys(population).forEach(function (key) {
@@ -201,4 +227,3 @@ function download(filename, text) {
 
 // var createStats = document.getElementById('createStats')
 // createStats.addEventListener('click', handleDownloadStats, false);
-

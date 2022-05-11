@@ -153,6 +153,7 @@ function step() {
 		currentTiling.iterate();
 		increment_number_of_steps();
 		currentTiling.colorTiles();
+		get_totalSand();
 		if (selectedTile)
 			tileInfo.innerHTML = "Tile index : " + selectedTile + "<br>Sand : " + currentTiling.tiles[selectedTile].sand;
 	}
@@ -160,7 +161,7 @@ function step() {
 
 function steps() {
 	// get number of steps
-	let n = document.getElementById("stepsRepeat").valueAsNumber;
+	let n = document.getElementById("stepsRepeat") ? document.getElementById("stepsRepeat").valueAsNumber : 1;
 	if (currentTiling) {
 		let is_stable = false;
 		// perform n steps
@@ -191,8 +192,10 @@ function iterateTiling() {
 	if (document.getElementById("pauseToggle").checked && is_stable)
 		playPause(document.getElementById("playButton"));
 	currentTiling.colorTiles();
-	if (selectedTile)
-		tileInfo.innerHTML = "Tile index : " + selectedTile + "<br>Sand : " + currentTiling.tiles[selectedTile].sand;
+	if (document.getElementById("addRadomToggle").checked)
+			addRadomSand();
+	// if (selectedTile)
+	// 	tileInfo.innerHTML = "Tile index : " + selectedTile + "<br>Sand : " + currentTiling.tiles[selectedTile].sand;
 
 }
 
@@ -202,6 +205,7 @@ function iterateTiling() {
 //		Tiling.js [ 2.5 ]
 // ------------------------------------------------
 function stabTiling() {
+	
 	if (currentTiling) {
 		currentTiling.stabilize();
 	}
@@ -273,6 +277,12 @@ function complexOperationAdd() {
 
 	if (selectedTile)
 		tileInfo.innerHTML = "Tile index : " + selectedTile + "<br>Sand : " + currentTiling.tiles[selectedTile].sand;
+}
+
+// feat_corringo_app
+function addRadomSand() {
+	var operationTimes = 1;
+	currentTiling.addRandom(operationTimes);
 }
 
 function complexOperationSet() {
@@ -402,11 +412,11 @@ async function playWithDelay() {
 function playPause(elem) {
 	if (play) {
 		play = false;
-		elem.innerHTML = "Play";
+		elem.innerHTML = "Iniciar";
 		elem.style.backgroundColor = "#FFFFFF";
 	} else {
 		play = true;
-		elem.innerHTML = "Pause";
+		elem.innerHTML = "Pausar";
 		elem.style.backgroundColor = "#CCCCCC";
 	}
 }
@@ -470,7 +480,8 @@ function drawTiling() {
 
 	selectedTile = null;
 
-	preset = document.getElementById("TilingSelect").value;
+	// feat_corrigindo_app
+	preset = document.getElementById("TilingSelect") ? document.getElementById("TilingSelect").value : 'sqTiling';
 
 	var nbIt = document.getElementById("penroseIt").value;
 
@@ -661,7 +672,7 @@ function CanvasClick(event, force) {
 					selectedTile = lastTile;
 
 					console.log(currentTiling.tiles[selectedTile]);
-					tileInfo.innerHTML = "Tile index : " + selectedTile + "<br>Sand : " + currentTiling.tiles[selectedTile].sand;
+					// tileInfo.innerHTML = "Tile index : " + selectedTile + "<br>Sand : " + currentTiling.tiles[selectedTile].sand;
 					currentTiling.selectedIndex = currentTiling.indexDict[face.faceIndex * 3];
 					break;
 
@@ -717,3 +728,33 @@ var holdMouse = false;
 var lastTile = 0;
 var previousTile = -1;
 
+
+///Function (matriz_aleatoria) that gets a random number of sand grains
+///and randomly adds them to a matrix, based on the Height and Width parameters
+
+var totalSand = 0;
+
+function matriz_aleatoria() {
+	drawTiling();
+	cW = document.getElementById("cW").value;
+	cH = document.getElementById("cH").value;
+	i = 0;
+	randNum = Math.floor(Math.round(Math.random() * (cW * cH * 3.75)));
+	///randNum holds the random number of grains that the loop is going to add to the matrix
+
+	while ( i < randNum ) {
+		addRadomSand();
+		i++;
+	}
+}
+
+function get_totalSand() {
+	totalSand = 0;
+	var qtd = 0;
+	var arrayArrayTiles = currentTiling.tiles;
+	for (var i = 0; i < arrayArrayTiles.length; i += 1){
+		qtd = qtd + arrayArrayTiles[i].sand;
+	}
+	totalSand = qtd;
+	return totalSand;
+}
