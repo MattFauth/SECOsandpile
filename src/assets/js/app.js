@@ -739,10 +739,10 @@ function matriz_aleatoria() {
 	cW = document.getElementById("cW").value;
 	cH = document.getElementById("cH").value;
 	i = 0;
-	randNum = Math.floor(Math.round(Math.random() * (cW * cH * 3.75)));
+	randNum = Math.floor(Math.round(Math.random() * (cW * cH * 4)));
 	///randNum holds the random number of grains that the loop is going to add to the matrix
 
-	while ( i < randNum ) {
+	while ( i <= randNum ) {
 		addRadomSand();
 		i++;
 	}
