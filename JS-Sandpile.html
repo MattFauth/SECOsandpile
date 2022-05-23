@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Modelo Pilha de Areia</title>
+  <link rel="icon" href="favicon.ico" />
+
+  <!-- ####################################################### CSS IMPORTS -->
+  <style>
+    @import "./css/bootstrap.min.css";
+    @import "./css/scrollbar.css";
+    @import "./css/modal.css";
+    @import "./css/elements.css";
+  </style>
+</head>
+<body>
+  <!-- ################################################################ UPPER BAR -->
+  <header>
+    <span
+      style="
+        margin-left: 10px;
+        margin-right: 80px;
+        font-size: 35px;
+        font-weight: bold;
+      "
+      >Modelo Pilha de Areia</span
+    >
+    Zoom (%) :
+    <input
+      type="number"
+      id="zoomLevel"
+      style="margin-right: 20px"
+      oninput="set_zoom(this)"
+      value="100"
+      max="9999"
+      step="10"
+    />
+    Atraso (ms) :
+    <input
+      type="number"
+      id="delay"
+      style="margin-right: 20px"
+      value="100"
+      oninput="changeDelay(this);"
+      min="0"
+      max="10000"
+    />
+    Taxa de Atualização :
+    <input
+      type="number"
+      id="IPF"
+      style="margin-right: 80px"
+      value="1"
+      oninput="changeIPS(this);"
+      min="1"
+      max="999"
+    />
+    <button
+      id="playButton"
+      onclick="playPause(this)"
+      class="btn btn-default"
+      style="margin-right: 20px; font-weight: bold"
+    >
+      Geração Continua
+    </button>
+    <button onclick="step()" style="margin-right: 20px" class="btn btn-default">
+      Um passo
+    </button>
+    <span id="number_of_steps"></span>
+    <button
+      onclick="reset_number_of_steps()"
+      style="margin-right: 20px"
+      class="btn btn-default"
+    >
+      Reiniciar Contador
+    </button>
+
+    <!-- Upper right alignment -->
+    <span style="position: absolute; top: 10px; right: 50px">
+      Auto-parada :
+    </span>
+    <label class="switch" style="position: absolute; top: 12px; right: 10px">
+      <input type="checkbox" id="pauseToggle" checked="true" />
+      <span class="slider round"></span>
+    </label>
+
+    <!-- Upper right alignment -->
+    <span style="position: absolute; top: 30px; right: 50px">
+      Desenhar grade :
+    </span>
+    <label class="switch" style="position: absolute; top: 32px; right: 10px">
+      <input
+        type="checkbox"
+        id="wireFrameToggle"
+        oninput="enableWireFrame(this);"
+        checked="false"
+      />
+      <span class="slider round"></span>
+    </label>
+  </header>
+
+  <!-- ################################################################ CONTROL (LEFT) BAR -->
+  <nav>
+    <!-- ############################################################ Main Controls -->
+    <div id="main controls" class="controlGroup">
+      <p class="groupTitle">Criação de grade</p>
+      <button
+        onclick="drawTiling()"
+        style="margin-left: auto; font-weight: bold"
+        class="btn btn-default"
+      >
+        Criar grade
+      </button>
+      <br />
+
+      <!-- Tiling-specific controls -->
+      <p class="groupTitle" id="paramTitle">Parâmetros</p>
+      <!-- Square controls -->
+      <div id="paramHide">
+        <span id="p_width">
+          Largura :
+          <input
+            type="number"
+            id="cW"
+            min="0"
+            value="100"
+            style="width: 50px"
+          />
+        </span>
+
+        <span id="p_height">
+          &nbsp; &nbsp; Altura :
+          <input
+            type="number"
+            id="cH"
+            min="0"
+            value="100"
+            style="width: 50px" />
+          <br
+        /></span>
+
+        <span id="p_size" style="display: none">
+          Tamanho :
+          <input
+            type="number"
+            id="size"
+            min="0"
+            value="20"
+            style="width: 50px" />
+          <br
+        /></span>
+
+        <!-- Penrose controls -->
+        <span id="p_iterations" style="display: none">
+          Iterações :
+          <input
+            type="number"
+            style="width: 50px"
+            id="penroseIt"
+            min="0"
+            value="4" />
+          <br
+        /></span>
+      </div>
+    </div>
+    <!-- Main controls  -->
+
+    <!-- ############################################################ Mouse Controls -->
+    <div id="mouse controls" class="controlGroup">
+      <p class="groupTitle">Controles do Mouse</p>
+      <select id="mouseOperation">
+        <option value="addOne">Adicionar</option>
+        <option value="rmOne">Remover</option>
+        <option value="setOne">Definir</option>
+        <option value="select">Selecionar</option>
+      </select>
+      <div id="maskMouseRepeat" style="display: inline">
+        &nbsp;&nbsp;times&nbsp;&nbsp;
+        <input
+          type="number"
+          id="mouseOperationRepeat"
+          value="1"
+          min="0"
+          max="999999"
+          style="width: 70px"
+        />
+      </div>
+      <br /><br />
+      <div style="display: flex">
+        Raio do mouse :
+        <input
+          type="range"
+          min="1"
+          max="8"
+          value="1"
+          step="1"
+          id="brushRange"
+          style="width: 150px; margin-left: 10px"
+          list="steplist"
+        />
+        <datalist id="steplist">
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+          <option>6</option>
+          <option>7</option>
+          <option>8</option>
+        </datalist>
+      </div>
+    </div>
+    <!-- Mouse controls -->
+
+    <!-- ############################################################ Operations / Secondary Controls -->
+    <div id="secondary controls" class="controlGroup">
+      <p class="groupTitle">Operações da Pilha de Areia</p>
+      <select id="complexOperationValue">
+        <option value="MaxS">Maximo estável</option>
+        <option value="OneE">Um grão em todos os lugares</option>
+        <option value="Dual">Duplo</option>
+        <option value="Iden">Identificar</option>
+        <option value="Inve">Inverso</option>
+        <option value="Rand">Aleatório</option>
+      </select>
+      <div id="complexTimesMask" style="display: inline">
+        &nbsp;&nbsp;times&nbsp;&nbsp;
+        <input
+          type="number"
+          id="complexOperationRepeat"
+          min="0"
+          value="1"
+          max="999999"
+          style="width: 70px"
+        />
+      </div>
+      <br />
+      <div
+        style="
+          margin-left: auto;
+          margin-right: auto;
+          display: table;
+          margin-top: 10px;
+        "
+        class="btn-group"
+      >
+        <button
+          id="complexOperationAdd"
+          onclick="complexOperationAdd()"
+          class="btn btn-default"
+        >
+          Adicionar
+        </button>
+
+        <button
+          id="complexOperationSub"
+          onclick="complexOperationSub()"
+          class="btn btn-default"
+        >
+          Subtrair
+        </button>
+
+        <button
+          id="complexOperationSet"
+          onclick="complexOperationSet()"
+          class="btn btn-default"
+        >
+          Definir
+        </button>
+      </div>
+      <button
+        onclick="clearTiling()"
+        class="btn btn-default"
+        style="margin-top: 10px; display: table; width: -webkit-fill-available"
+      >
+        Limpar
+      </button>
+      <button
+        id="saveConfig"
+        onclick="saveConfiguration()"
+        style="
+          margin-top: 10px;
+          display: table;
+          width: -webkit-fill-available; ;
+        "
+        class="btn btn-default"
+      >
+        Salvar Configurações
+      </button>
+
+      <!-- Random Seeding -->
+      <div id="seedMask" style="margin-top: 10px">
+        Seed Aleatória :
+        <input
+          id="randSeed"
+          value="1"
+          oninput="changeSeed(this);"
+          style="width: 60px"
+        />
+      </div>
+    </div>
+    <!-- Operations controls -->
+
+    <!-- ############################################################ Misc Controls -->
+    <div class="controlGroup">
+      <p class="groupTitle">Outros Controles</p>
+      <button
+        id="colorButton"
+        style="margin-left: auto; margin-right: auto; display: block"
+        class="btn btn-default"
+      >
+        Selecionador de Cores
+      </button>
+    </div>
+  </nav>
+
+  <!-- ################################################################ Color picking window -->
+  <div id="colors" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+    </div>
+  </div>
+  <select id="TilingSelect" onchange="hideParams()" style="visibility: hidden">
+    <optgroup label="Regular">
+      <option value="sqTiling">Quadrados</option>
+    </optgroup>
+  </select>
+
+  <!-- ################################################################ Canvas -->
+  <div class="canvasDiv" id="canvasHolder"></div>
+
+  <!-- ################################################################ JS Imports -->
+  <script src="./js/Utils/jquery.min.js"></script>
+  <script src="./js/Utils/three.min.js"></script>
+  <script src="./js/Utils/OrthographicTrackballControls.js"></script>
+  <script src="./js/Utils/bootstrap.min.js"></script>
+  <script src="./js/Utils/earcut.js"></script>
+  <script src="./js/Utils/Geometry.js"></script>
+  <script src="./js/Utils/Matrix.js"></script>
+  <script src="./js/Utils/Combinatorics.js"></script>
+  <script src="./js/Utils/gpu-browser.min.js"></script>
+  <script src="./js/Tiling.js"></script>
+  <script src="./js/TilingPresets/SquareTiling.js"></script>
+  <script src="./js/Features/ChangeDisplay.js"></script>
+  <script src="./js/Features/Stats.js"></script>
+  <script src="./js/app.js"></script>
+</body>
