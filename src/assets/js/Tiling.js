@@ -230,6 +230,9 @@ class Tiling{
 	// ------------------------------------------------
 	// 	[ 2.2 ] 	Apply sandpile steps
 	// ------------------------------------------------
+
+	qtdAvalanches = 0
+	qtdGraosPerdidos = 0
 	iterate(){
 		// Topple any tile that has more than the limit of sand
 		var is_stable = true;
@@ -240,10 +243,12 @@ class Tiling{
 			var til = this.tiles[i];
 			if(til.prevSand >= til.limit){
 				til.sand -= til.limit;
+				this.qtdAvalanches += 1;
 				for(var j = 0; j< til.neighbors.length; j++){
 					this.tiles[til.neighbors[j]].sand += 1;
 				}
 				is_stable = false;
+				this.qtdGraosPerdidos += 4 - til.neighbors.length;
 			}
 		}
 		return is_stable;
@@ -266,8 +271,15 @@ class Tiling{
 	// 	[ 2.3 ] 	Basic operation functions
 	// ------------------------------------------------
 	add(id, amount){
-		this.tiles[id].sand += amount;
-		this.colorTile(id);
+		///console.log('Qtd de grãos antes: ',this.tiles[id].sand)
+		if (this.tiles[id].sand < 4){
+			this.tiles[id].sand += amount;
+			this.colorTile(id);
+			///console.log('Qtd de grãos depois: ',this.tiles[id].sand)
+		}
+		else {
+			console.log('Atingiu o limite da pilha')
+		}
 	}
 	
 	set(id, amount){
@@ -396,15 +408,22 @@ class Tiling{
 			} else{
 				// default
 				
-				if(tile.sand >= tile.limit){
+				if(tile.sand > tile.limit){
 					// ready to topple - flashy colors
-					var flashy = ["#ff1a1a", "#ff751a", "#ffbb33", "#ffff4d", "#99ff66", "#44ff11", "#22ffaa", "#00ffff", "#0077ff",  "#0000ff"];
+					var flashy = ["#010103"];
 					var flashyIndex = Math.min(tile.sand-tile.limit, flashy.length-1);
 					color = new THREE.Color(flashy[flashyIndex]);
 				} else {
 					// stable, grey
-					var greyScale = 1.0 - tile.sand / tile.limit;
-					color = new THREE.Color( greyScale, greyScale, greyScale );
+					// var greyScale = 1.0 - tile.sand / tile.limit;
+					var colorDefaultList = ["#ffffff", "#ff0000", "#FFFF00", "#00FF00", "#0000FF"];
+					var newCmap = [];
+						for(var i = 0; i < colorDefaultList.length; i++){
+							var col = new THREE.Color(0x000000);
+							col.set(colorDefaultList[i]);
+							newCmap.push(col);
+						}
+					color = new THREE.Color( newCmap[tile.sand].r, newCmap[tile.sand].g, newCmap[tile.sand].b );
 					
 				}
 			}
